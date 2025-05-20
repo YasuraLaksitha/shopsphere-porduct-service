@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: products
+  profiles:
+    active: default
+  config:
+    import: "optional:configserver:http://localhost:8070/"
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:test_db
+    username: sa
+    password: ''
+    driver-class-name: org.h2.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
