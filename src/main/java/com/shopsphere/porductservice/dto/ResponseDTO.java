@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class ResponseDTO {
+
     private HttpStatus status;
+
     private String message;
+
     private LocalDateTime timestamp;
 }

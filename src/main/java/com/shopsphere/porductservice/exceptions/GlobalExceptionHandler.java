@@ -30,6 +30,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(responseDTO, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(value = {ResourceNotFoundException.class})
+    public ResponseEntity<ErrorResponseDTO> handleResourceNotFoundException(final ResourceNotFoundException ex, final WebRequest request) {
+        final ErrorResponseDTO responseDTO = ErrorResponseDTO.builder()
+                .status(HttpStatus.NOT_FOUND.name())
+                .message(ex.getMessage())
+                .path(request.getDescription(false))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+    }
+
+    @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         final HashMap<String, String> errorMap = new HashMap<>();
@@ -38,5 +51,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 errorMap.put(((FieldError) error).getField(), error.getDefaultMessage()));
 
         return ResponseEntity.badRequest().body(errorMap);
+    }
+
+    @ExceptionHandler(value = {Exception.class})
+    public ResponseEntity<ErrorResponseDTO> handleGlobalException(
+            final Exception ex,
+            final WebRequest webRequest
+    ) {
+
+        final ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.name())
+                .message(ex.getMessage())
+                .path(webRequest.getDescription(false))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
