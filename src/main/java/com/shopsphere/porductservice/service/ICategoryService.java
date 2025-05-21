@@ -1,6 +1,9 @@
 package com.shopsphere.porductservice.service;
 
 import com.shopsphere.porductservice.dto.CategoryDTO;
+import com.shopsphere.porductservice.dto.PaginationResponseDTO;
+
+import java.util.List;
 
 public interface ICategoryService {
 
@@ -16,4 +19,12 @@ public interface ICategoryService {
      * @return categoryDTO
      */
     CategoryDTO retrieveCategoryByName(final String categoryName);
+
+    /**
+     *
+     * @return List of categoryDTOs
+     */
+    PaginationResponseDTO<List<CategoryDTO>> retrieveAllCategories(final String orderBy, final String sortOrder,
+                                                                   final int pageNumber, final int pageSize,
+                                                                   final String keyword);
 }

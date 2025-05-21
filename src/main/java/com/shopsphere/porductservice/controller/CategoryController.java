@@ -1,6 +1,7 @@
 package com.shopsphere.porductservice.controller;
 
 import com.shopsphere.porductservice.dto.CategoryDTO;
+import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.dto.ResponseDTO;
 import com.shopsphere.porductservice.service.ICategoryService;
 import com.shopsphere.porductservice.utils.ApplicationConstants;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/category", produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -41,5 +43,17 @@ public class CategoryController {
     ) {
         final CategoryDTO category = categoryService.retrieveCategoryByName(name);
         return ResponseEntity.ok(category);
+    }
+
+    @GetMapping("/public/categories")
+    public ResponseEntity<PaginationResponseDTO<List<CategoryDTO>>> getAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = ApplicationConstants.PAGE_NUMBER) int pageNumber,
+            @RequestParam(required = false, defaultValue = ApplicationConstants.CATEGORY_PAGE_SIZE) int pageSize,
+            @RequestParam(required = false, defaultValue = ApplicationConstants.CATEGORY_SORT_ORDER) String sortOrder,
+            @RequestParam(required = false, defaultValue = ApplicationConstants.CATEGORY_ORDER_BY) String orderBy
+    ) {
+        return ResponseEntity.ofNullable
+                (categoryService.retrieveAllCategories(orderBy, sortOrder, pageNumber, pageSize, keyword));
     }
 }
