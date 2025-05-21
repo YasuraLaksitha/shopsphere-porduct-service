@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements ICategoryService {
 
     @Override
     public void persistCategory(final CategoryDTO category) {
-        categoryRepository.findByCategoryNameEqualsIgnoreCase(category.getCategoryName()).ifPresent((existingCategory) -> {
+        categoryRepository.findByCategoryNameIgnoreCase(category.getCategoryName()).ifPresent((existingCategory) -> {
             throw new ResourceAlreadyExistException("Category", "Category name", existingCategory.getCategoryName());
         });
 
@@ -43,7 +43,7 @@ public class CategoryServiceImpl implements ICategoryService {
     @Override
     public CategoryDTO retrieveCategoryByName(final String categoryName) {
         final CategoryEntity categoryEntity =
-                categoryRepository.findByCategoryNameEqualsIgnoreCase(categoryName).orElseThrow(
+                categoryRepository.findByCategoryNameIgnoreCase(categoryName).orElseThrow(
                         () -> new ResourceNotFoundException("Category", "category name", categoryName)
                 );
         return objectMapper.convertValue(categoryEntity, CategoryDTO.class);
@@ -54,7 +54,10 @@ public class CategoryServiceImpl implements ICategoryService {
                                                                           final int pageNumber, final int pageSize,
                                                                           final String keyword) {
         Specification<CategoryEntity> spec = Specification.where(null);
-
+        
+        spec.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.isFalse(root.get("isUnavailable")));
+        
         if (StringUtils.hasText(keyword)) {
             spec = spec.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(
