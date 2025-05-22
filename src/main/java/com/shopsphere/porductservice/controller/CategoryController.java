@@ -79,7 +79,7 @@ public class CategoryController {
                         .message(ApplicationConstants.RESPONSE_MESSAGE_200)
                         .build()) :
 
-                ResponseEntity.ok().body(ResponseDTO.builder()
+                ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(ResponseDTO.builder()
                         .status(HttpStatus.EXPECTATION_FAILED)
                         .timestamp(LocalDateTime.now())
                         .message(ApplicationConstants.RESPONSE_MESSAGE_417)
