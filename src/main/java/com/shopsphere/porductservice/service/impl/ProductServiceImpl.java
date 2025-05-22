@@ -48,4 +48,12 @@ public class ProductServiceImpl implements IProductService {
 
         productRepository.save(productEntity);
     }
+
+    @Override
+    public ProductDTO retrieveProductByName(final String productName) {
+        final ProductEntity productEntity = productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                () -> new ResourceNotFoundException("Product", "product name", productName)
+        );
+        return objectMapper.convertValue(productEntity, ProductDTO.class);
+    }
 }

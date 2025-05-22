@@ -27,12 +27,19 @@ public class ProductController {
     public ResponseEntity<ResponseDTO> save(
             @Valid @RequestBody ProductDTO product,
             @NotEmpty(message = "category name is required") @PathVariable final String category) {
-        productService.persistProduct(product,category);
+        productService.persistProduct(product, category);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseDTO.builder()
                         .status(HttpStatus.CREATED)
                         .timestamp(LocalDateTime.now())
                         .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_201)
                         .build());
+    }
+
+    @GetMapping("/public/get")
+    public ResponseEntity<ProductDTO> getByName(
+            @NotEmpty(message = "product name is required") @RequestParam final String productName) {
+        final ProductDTO productDTO = productService.retrieveProductByName(productName);
+        return ResponseEntity.ok(productDTO);
     }
 }
