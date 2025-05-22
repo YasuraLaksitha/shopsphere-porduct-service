@@ -11,7 +11,7 @@ import com.shopsphere.porductservice.exceptions.ResourceAlreadyUnavailableExcept
 import com.shopsphere.porductservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.porductservice.repository.CategoryRepository;
 import com.shopsphere.porductservice.service.ICategoryService;
-import com.shopsphere.porductservice.utils.ApplicationConstants;
+import com.shopsphere.porductservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -68,7 +68,7 @@ public class CategoryServiceImpl implements ICategoryService {
                     )
             );
         }
-        final Sort.Direction sortDirection = sortOrder.equalsIgnoreCase(ApplicationConstants.CATEGORY_SORT_ORDER) ?
+        final Sort.Direction sortDirection = sortOrder.equalsIgnoreCase(ApplicationDefaultConstants.CATEGORY_SORT_ORDER) ?
                 Sort.Direction.ASC :
                 Sort.Direction.DESC;
         final Sort sortOrderBy = Sort.by(sortDirection, orderBy);

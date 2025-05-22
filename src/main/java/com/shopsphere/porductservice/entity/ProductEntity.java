@@ -1,17 +1,17 @@
 package com.shopsphere.porductservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "tbl_product")
+@EntityListeners(value = {AuditingEntityListener.class})
 public class ProductEntity extends BaseEntity {
 
     @Id
@@ -31,7 +31,7 @@ public class ProductEntity extends BaseEntity {
 
     private Double productPrice;
 
-    private int minimumThreadHoldCount;
+    private Integer minimumThreshHoldCount;
 
-    private double productSpecialPrice;
+    private Double productSpecialPrice;
 }

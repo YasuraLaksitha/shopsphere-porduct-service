@@ -1,8 +1,8 @@
 package com.shopsphere.porductservice.utils;
 
-public final class ApplicationConstants {
+public final class ApplicationDefaultConstants {
 
-    private ApplicationConstants() {}
+    private ApplicationDefaultConstants() {}
 
     public static final String RESPONSE_MESSAGE_201 = "Resource created successfully";
 
@@ -17,4 +17,12 @@ public final class ApplicationConstants {
     public static final String PAGE_NUMBER = "0";
 
     public static final String RESPONSE_MESSAGE_417 = "Exception failed. Process unsuccessful";
+
+    public static final int MINIMUM_PRODUCT_THRESHHOLD_COUNT = 25;
+
+    public static final int PRODUCT_QUANTITY = 1;
+
+    public static final double PRODUCT_DISCOUNT_PRICE = 0.00;
+
+    public static final double PRODUCT_SPECIAL_PRICE = 0.00;
 }

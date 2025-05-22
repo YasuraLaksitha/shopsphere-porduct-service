@@ -4,7 +4,7 @@ import com.shopsphere.porductservice.dto.CategoryDTO;
 import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.dto.ResponseDTO;
 import com.shopsphere.porductservice.service.ICategoryService;
-import com.shopsphere.porductservice.utils.ApplicationConstants;
+import com.shopsphere.porductservice.utils.ApplicationDefaultConstants;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class CategoryController {
                 .body(ResponseDTO.builder()
                         .status(HttpStatus.CREATED)
                         .timestamp(LocalDateTime.now())
-                        .message(ApplicationConstants.RESPONSE_MESSAGE_201)
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_201)
                         .build());
     }
 
@@ -48,10 +48,10 @@ public class CategoryController {
     @GetMapping("/public/categories")
     public ResponseEntity<PaginationResponseDTO<List<CategoryDTO>>> getAll(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false, defaultValue = ApplicationConstants.PAGE_NUMBER) int pageNumber,
-            @RequestParam(required = false, defaultValue = ApplicationConstants.CATEGORY_PAGE_SIZE) int pageSize,
-            @RequestParam(required = false, defaultValue = ApplicationConstants.CATEGORY_SORT_ORDER) String sortOrder,
-            @RequestParam(required = false, defaultValue = ApplicationConstants.CATEGORY_ORDER_BY) String orderBy
+            @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.PAGE_NUMBER) int pageNumber,
+            @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_PAGE_SIZE) int pageSize,
+            @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_SORT_ORDER) String sortOrder,
+            @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_ORDER_BY) String orderBy
     ) {
         return ResponseEntity.ofNullable
                 (categoryService.retrieveAllCategories(orderBy, sortOrder, pageNumber, pageSize, keyword));
@@ -63,7 +63,7 @@ public class CategoryController {
         return ResponseEntity.ok().body(ResponseDTO.builder()
                 .status(HttpStatus.OK)
                 .timestamp(LocalDateTime.now())
-                .message(ApplicationConstants.RESPONSE_MESSAGE_200)
+                .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
                 .build());
     }
 
@@ -76,13 +76,13 @@ public class CategoryController {
                 ResponseEntity.ok().body(ResponseDTO.builder()
                         .status(HttpStatus.OK)
                         .timestamp(LocalDateTime.now())
-                        .message(ApplicationConstants.RESPONSE_MESSAGE_200)
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
                         .build()) :
 
                 ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(ResponseDTO.builder()
                         .status(HttpStatus.EXPECTATION_FAILED)
                         .timestamp(LocalDateTime.now())
-                        .message(ApplicationConstants.RESPONSE_MESSAGE_417)
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_417)
                         .build());
     }
 }
