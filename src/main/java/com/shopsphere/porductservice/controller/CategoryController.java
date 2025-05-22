@@ -66,4 +66,23 @@ public class CategoryController {
                 .message(ApplicationConstants.RESPONSE_MESSAGE_200)
                 .build());
     }
+
+    @DeleteMapping("/admin/delete/{name}")
+    public ResponseEntity<ResponseDTO> delete(
+            @Pattern(regexp = "[a-zA-Z]+", message = "Invalid category name")
+            @PathVariable final String name
+    ) {
+        return categoryService.deleteCategoryByName(name) ?
+                ResponseEntity.ok().body(ResponseDTO.builder()
+                        .status(HttpStatus.OK)
+                        .timestamp(LocalDateTime.now())
+                        .message(ApplicationConstants.RESPONSE_MESSAGE_200)
+                        .build()) :
+
+                ResponseEntity.ok().body(ResponseDTO.builder()
+                        .status(HttpStatus.EXPECTATION_FAILED)
+                        .timestamp(LocalDateTime.now())
+                        .message(ApplicationConstants.RESPONSE_MESSAGE_417)
+                        .build());
+    }
 }

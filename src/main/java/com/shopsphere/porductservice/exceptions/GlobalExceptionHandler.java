@@ -19,7 +19,8 @@ import java.util.HashMap;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ResourceAlreadyExistException.class, NoModificationRequiredException.class})
-    public ResponseEntity<ErrorResponseDTO> handleResourceAlreadyExistException(final RuntimeException ex, final WebRequest request) {
+    public ResponseEntity<ErrorResponseDTO> handleResourceAlreadyExistException(final RuntimeException ex,
+                                                                                final WebRequest request) {
         final ErrorResponseDTO responseDTO = ErrorResponseDTO.builder()
                 .status(HttpStatus.CONFLICT.name())
                 .message(ex.getMessage())
@@ -68,5 +69,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = {ResourceAlreadyUnavailableException.class})
+    public ResponseEntity<ErrorResponseDTO> handleGlobalException(
+            final ResourceAlreadyUnavailableException ex,
+            final WebRequest webRequest
+    ) {
+
+        final ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
+                .status(HttpStatus.BAD_REQUEST.name())
+                .message(ex.getMessage())
+                .path(webRequest.getDescription(false))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
     }
 }

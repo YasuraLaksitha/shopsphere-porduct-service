@@ -7,6 +7,7 @@ import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.entity.CategoryEntity;
 import com.shopsphere.porductservice.exceptions.NoModificationRequiredException;
 import com.shopsphere.porductservice.exceptions.ResourceAlreadyExistException;
+import com.shopsphere.porductservice.exceptions.ResourceAlreadyUnavailableException;
 import com.shopsphere.porductservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.porductservice.repository.CategoryRepository;
 import com.shopsphere.porductservice.service.ICategoryService;
@@ -99,5 +100,22 @@ public class CategoryServiceImpl implements ICategoryService {
         }
         categoryEntity.setCategoryDescription(category.getCategoryDescription());
         categoryRepository.save(categoryEntity);
+    }
+
+    @Override
+    public boolean deleteCategoryByName(final String categoryName) {
+
+        final CategoryEntity categoryEntity =
+                categoryRepository.findByCategoryNameIgnoreCase(categoryName).orElseThrow(
+                        () -> new ResourceNotFoundException("Category", "category name", categoryName)
+                );
+
+        if (categoryEntity.isUnavailable())
+            throw new ResourceAlreadyUnavailableException("Category", "category name", categoryName);
+
+        categoryEntity.setUnavailable(true);
+        categoryRepository.save(categoryEntity);
+
+        return true;
     }
 }

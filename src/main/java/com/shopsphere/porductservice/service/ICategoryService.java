@@ -34,4 +34,10 @@ public interface ICategoryService {
      * @param category
      */
     void updateCategoryByName(@Valid CategoryDTO category);
+
+    /**
+     *
+     * @param categoryName - name of category
+     */
+    boolean deleteCategoryByName(@Valid String categoryName);
 }
