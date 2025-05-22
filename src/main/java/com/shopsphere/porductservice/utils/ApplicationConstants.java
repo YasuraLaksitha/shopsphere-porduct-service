@@ -7,6 +7,8 @@ public final class ApplicationConstants {
 
     public static final String RESPONSE_MESSAGE_201 = "Resource created successfully";
 
+    public static final String RESPONSE_MESSAGE_200 = "Process completed successfully";
+
     public static final String CATEGORY_ORDER_BY = "categoryName";
 
     public static final String CATEGORY_SORT_ORDER = "asc";

@@ -2,6 +2,7 @@ package com.shopsphere.porductservice.service;
 
 import com.shopsphere.porductservice.dto.CategoryDTO;
 import com.shopsphere.porductservice.dto.PaginationResponseDTO;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -27,4 +28,10 @@ public interface ICategoryService {
     PaginationResponseDTO<List<CategoryDTO>> retrieveAllCategories(final String orderBy, final String sortOrder,
                                                                    final int pageNumber, final int pageSize,
                                                                    final String keyword);
+
+    /**
+     *
+     * @param category
+     */
+    void updateCategoryByName(@Valid CategoryDTO category);
 }

@@ -18,8 +18,8 @@ import java.util.HashMap;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {ResourceAlreadyExistException.class})
-    public ResponseEntity<ErrorResponseDTO> handleResourceAlreadyExistException(final ResourceAlreadyExistException ex, final WebRequest request) {
+    @ExceptionHandler(value = {ResourceAlreadyExistException.class, NoModificationRequiredException.class})
+    public ResponseEntity<ErrorResponseDTO> handleResourceAlreadyExistException(final RuntimeException ex, final WebRequest request) {
         final ErrorResponseDTO responseDTO = ErrorResponseDTO.builder()
                 .status(HttpStatus.CONFLICT.name())
                 .message(ex.getMessage())
@@ -31,7 +31,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(value = {ResourceNotFoundException.class})
-    public ResponseEntity<ErrorResponseDTO> handleResourceNotFoundException(final ResourceNotFoundException ex, final WebRequest request) {
+    public ResponseEntity<ErrorResponseDTO> handleResourceNotFoundException(final ResourceNotFoundException ex,
+                                                                            final WebRequest request) {
         final ErrorResponseDTO responseDTO = ErrorResponseDTO.builder()
                 .status(HttpStatus.NOT_FOUND.name())
                 .message(ex.getMessage())

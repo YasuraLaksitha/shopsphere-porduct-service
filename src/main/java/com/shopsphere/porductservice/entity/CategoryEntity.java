@@ -16,7 +16,7 @@ public class CategoryEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false,updatable = false)
     private String categoryName;
 
     private String categoryDescription;

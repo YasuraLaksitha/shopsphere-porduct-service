@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopsphere.porductservice.dto.CategoryDTO;
 import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.entity.CategoryEntity;
+import com.shopsphere.porductservice.exceptions.NoModificationRequiredException;
 import com.shopsphere.porductservice.exceptions.ResourceAlreadyExistException;
 import com.shopsphere.porductservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.porductservice.repository.CategoryRepository;
@@ -54,10 +55,10 @@ public class CategoryServiceImpl implements ICategoryService {
                                                                           final int pageNumber, final int pageSize,
                                                                           final String keyword) {
         Specification<CategoryEntity> spec = Specification.where(null);
-        
+
         spec.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.isFalse(root.get("isUnavailable")));
-        
+
         if (StringUtils.hasText(keyword)) {
             spec = spec.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(
@@ -84,5 +85,19 @@ public class CategoryServiceImpl implements ICategoryService {
                 .pageSize(pageSize)
                 .isLastPage(categoryEntityPage.isLast())
                 .build();
+    }
+
+    @Override
+    public void updateCategoryByName(final CategoryDTO category) {
+        final CategoryEntity categoryEntity =
+                categoryRepository.findByCategoryNameIgnoreCase(category.getCategoryName())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Category", "category name", category.getCategoryName())
+                        );
+        if (categoryEntity.getCategoryDescription().equals(category.getCategoryDescription())) {
+            throw new NoModificationRequiredException("Category", "category name", category.getCategoryName());
+        }
+        categoryEntity.setCategoryDescription(category.getCategoryDescription());
+        categoryRepository.save(categoryEntity);
     }
 }

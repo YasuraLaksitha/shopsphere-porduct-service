@@ -56,4 +56,14 @@ public class CategoryController {
         return ResponseEntity.ofNullable
                 (categoryService.retrieveAllCategories(orderBy, sortOrder, pageNumber, pageSize, keyword));
     }
+
+    @PutMapping("/admin/update")
+    public ResponseEntity<ResponseDTO> update(@Valid @RequestBody CategoryDTO category) {
+        categoryService.updateCategoryByName(category);
+        return ResponseEntity.ok().body(ResponseDTO.builder()
+                .status(HttpStatus.OK)
+                .timestamp(LocalDateTime.now())
+                .message(ApplicationConstants.RESPONSE_MESSAGE_200)
+                .build());
+    }
 }
