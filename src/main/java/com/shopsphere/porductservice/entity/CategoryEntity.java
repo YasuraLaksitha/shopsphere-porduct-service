@@ -20,6 +20,4 @@ public class CategoryEntity extends BaseEntity {
     private String categoryName;
 
     private String categoryDescription;
-
-    private boolean isUnavailable;
 }

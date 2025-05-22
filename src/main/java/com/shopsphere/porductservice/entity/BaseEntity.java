@@ -29,4 +29,6 @@ public class BaseEntity {
     @UpdateTimestamp
     @Column(insertable = false ,name = "updated_at")
     private LocalDateTime updatedAt;
+
+    private boolean isUnavailable;
 }
