@@ -51,7 +51,7 @@ public class CategoryController {
             @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.PAGE_NUMBER) int pageNumber,
             @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_PAGE_SIZE) int pageSize,
             @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_SORT_ORDER) String sortOrder,
-            @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_ORDER_BY) String orderBy
+            @RequestParam(required = false, defaultValue = ApplicationDefaultConstants.CATEGORY_SORT_BY) String orderBy
     ) {
         return ResponseEntity.ofNullable
                 (categoryService.retrieveAllCategories(orderBy, sortOrder, pageNumber, pageSize, keyword));

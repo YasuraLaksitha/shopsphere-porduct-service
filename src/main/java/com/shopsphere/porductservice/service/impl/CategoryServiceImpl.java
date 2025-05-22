@@ -52,7 +52,7 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
-    public PaginationResponseDTO<List<CategoryDTO>> retrieveAllCategories(final String orderBy, final String sortOrder,
+    public PaginationResponseDTO<List<CategoryDTO>> retrieveAllCategories(final String sortBy, final String sortOrder,
                                                                           final int pageNumber, final int pageSize,
                                                                           final String keyword) {
         Specification<CategoryEntity> spec = Specification.where(null);
@@ -71,7 +71,7 @@ public class CategoryServiceImpl implements ICategoryService {
         final Sort.Direction sortDirection = sortOrder.equalsIgnoreCase(ApplicationDefaultConstants.CATEGORY_SORT_ORDER) ?
                 Sort.Direction.ASC :
                 Sort.Direction.DESC;
-        final Sort sortOrderBy = Sort.by(sortDirection, orderBy);
+        final Sort sortOrderBy = Sort.by(sortDirection, sortBy);
 
         final PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sortOrderBy);
         final Page<CategoryEntity> categoryEntityPage = categoryRepository.findAll(spec, pageRequest);
@@ -81,7 +81,7 @@ public class CategoryServiceImpl implements ICategoryService {
         return PaginationResponseDTO.<List<CategoryDTO>>builder()
                 .data(categoryDTOList)
                 .sortOrder(sortOrder)
-                .orderBy(orderBy)
+                .sortBy(sortBy)
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .isLastPage(categoryEntityPage.isLast())

@@ -1,6 +1,9 @@
 package com.shopsphere.porductservice.service;
 
+import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.dto.ProductDTO;
+
+import java.util.List;
 
 public interface IProductService {
 
@@ -8,7 +11,7 @@ public interface IProductService {
      *
      * @param productDTO - productDTO object
      */
-    void persistProduct(final ProductDTO productDTO,final String category);
+    void persistProduct(final ProductDTO productDTO, final String category);
 
     /**
      *
@@ -16,4 +19,18 @@ public interface IProductService {
      * @return productDTO object
      */
     ProductDTO retrieveProductByName(final String productName);
+
+    /**
+     *
+     * @param category   - category name
+     * @param pageNumber - page number
+     * @param pageSize   - page number
+     * @param sortBy     - sort field
+     * @param sortOrder  - sort order
+     * @param keyword    - keyword
+     * @return List of product DTOs
+     */
+    PaginationResponseDTO<List<ProductDTO>> retrieveAllProduct(final String category, final int pageNumber,
+                                                               final int pageSize, final String sortBy,
+                                                               final String sortOrder, final String keyword);
 }

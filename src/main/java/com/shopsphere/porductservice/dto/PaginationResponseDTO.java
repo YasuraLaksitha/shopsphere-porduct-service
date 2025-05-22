@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class PaginationResponseDTO<T> {
 
-    private String orderBy;
+    private String sortBy;
 
     private String sortOrder;
 
