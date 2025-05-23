@@ -10,15 +10,18 @@ import com.shopsphere.porductservice.exceptions.ResourceAlreadyExistException;
 import com.shopsphere.porductservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.porductservice.repository.CategoryRepository;
 import com.shopsphere.porductservice.repository.ProductRepository;
+import com.shopsphere.porductservice.service.IFileService;
 import com.shopsphere.porductservice.service.IProductService;
 import com.shopsphere.porductservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,11 +30,17 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
 
+
     private final ProductRepository productRepository;
 
     private final CategoryRepository categoryRepository;
 
     private final ObjectMapper objectMapper;
+
+    private final IFileService fileService;
+
+    @Value("${images.products.url}")
+    private String productImageUrl;
 
     @Override
     public void persistProduct(final ProductDTO productDTO, final String category) {
@@ -67,8 +76,10 @@ public class ProductServiceImpl implements IProductService {
                 );
 
         final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
-        productDTO.setProductDiscountPrice(calculateProductDiscountPrice(productEntity.getProductSpecialPrice(),
-                productEntity.getProductPrice()));
+        productDTO.setProductDiscountPrice(calculateProductDiscountPrice(
+                productEntity.getProductSpecialPrice(),
+                productEntity.getProductPrice()
+        ));
 
         return productDTO;
     }
@@ -149,6 +160,19 @@ public class ProductServiceImpl implements IProductService {
         if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
             productEntity.setUnavailable(true);
 
+        productRepository.save(productEntity);
+    }
+
+    @Override
+    public void updateProductImage(final MultipartFile image, final String productName) throws Exception {
+        final ProductEntity productEntity =
+                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                () -> new ResourceNotFoundException("Product", "product name", productName)
+        );
+
+
+        final String uploadImage = fileService.uploadImage(image, productImageUrl);
+        productEntity.setProductImage(uploadImage);
         productRepository.save(productEntity);
     }
 

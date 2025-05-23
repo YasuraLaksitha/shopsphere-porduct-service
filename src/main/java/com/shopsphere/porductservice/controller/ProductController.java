@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -64,6 +65,19 @@ public class ProductController {
     @PutMapping("/admin/update")
     public ResponseEntity<ResponseDTO> updateProductDetails(@Valid @RequestBody ProductDTO productDTO) {
         productService.updateProduct(productDTO);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .status(HttpStatus.OK)
+                        .timestamp(LocalDateTime.now())
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
+                        .build());
+    }
+
+    @PutMapping("/admin/{productName}/image")
+    public ResponseEntity<ResponseDTO> updateImage(@PathVariable String productName,
+                                                   @RequestParam MultipartFile image) throws Exception {
+
+        productService.updateProductImage(image, productName);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .status(HttpStatus.OK)

@@ -20,7 +20,7 @@ public class ProductEntity extends BaseEntity {
 
     private Long categoryId;
 
-    private String image;
+    private String productImage;
 
     @Column(unique = true, nullable = false, updatable = false)
     private String productName;

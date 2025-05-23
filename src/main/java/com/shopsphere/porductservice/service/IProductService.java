@@ -2,6 +2,7 @@ package com.shopsphere.porductservice.service;
 
 import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.dto.ProductDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -39,4 +40,11 @@ public interface IProductService {
      * @param productDTO - productDTO object
      */
     void updateProduct(final ProductDTO productDTO);
+
+    /**
+     *
+     * @param file - image
+     * @param productName - name of the product
+     */
+    void updateProductImage(final MultipartFile image, final String productName) throws Exception;
 }

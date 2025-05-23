@@ -18,7 +18,7 @@ public class ProductDTO {
     @Positive(message = "Product quantity should be positive")
     private Integer productQuantity;
 
-    private String image;
+    private String productImage;
 
     @NotNull(message = "Product price is required")
     private Double productPrice;
