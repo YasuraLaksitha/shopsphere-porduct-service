@@ -7,6 +7,7 @@ import com.shopsphere.porductservice.entity.CategoryEntity;
 import com.shopsphere.porductservice.entity.ProductEntity;
 import com.shopsphere.porductservice.exceptions.NoModificationRequiredException;
 import com.shopsphere.porductservice.exceptions.ResourceAlreadyExistException;
+import com.shopsphere.porductservice.exceptions.ResourceAlreadyUnavailableException;
 import com.shopsphere.porductservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.porductservice.repository.CategoryRepository;
 import com.shopsphere.porductservice.repository.ProductRepository;
@@ -29,7 +30,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
-
 
     private final ProductRepository productRepository;
 
@@ -167,13 +167,26 @@ public class ProductServiceImpl implements IProductService {
     public void updateProductImage(final MultipartFile image, final String productName) throws Exception {
         final ProductEntity productEntity =
                 productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
-                () -> new ResourceNotFoundException("Product", "product name", productName)
-        );
+                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                );
 
 
         final String uploadImage = fileService.uploadImage(image, productImageUrl);
         productEntity.setProductImage(uploadImage);
         productRepository.save(productEntity);
+    }
+
+    @Override
+    public boolean removeProductByName(final String productName) {
+        final ProductEntity productEntity =
+                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                );
+        if (productEntity.isUnavailable())
+            throw new ResourceAlreadyUnavailableException("Product", "product name", productName);
+        productEntity.setUnavailable(true);
+
+        return productEntity.isUnavailable();
     }
 
     private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {

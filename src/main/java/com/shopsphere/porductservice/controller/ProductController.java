@@ -85,4 +85,23 @@ public class ProductController {
                         .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
                         .build());
     }
+
+    @DeleteMapping("/admin/{productName}")
+    public ResponseEntity<ResponseDTO> removeProduct(@PathVariable final String productName) {
+
+        return productService.removeProductByName(productName) ?
+                ResponseEntity.status(HttpStatus.OK)
+                        .body(ResponseDTO.builder()
+                                .status(HttpStatus.OK)
+                                .timestamp(LocalDateTime.now())
+                                .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
+                                .build()) :
+
+                ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+                        .body(ResponseDTO.builder()
+                                .status(HttpStatus.EXPECTATION_FAILED)
+                                .timestamp(LocalDateTime.now())
+                                .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_417)
+                                .build());
+    }
 }

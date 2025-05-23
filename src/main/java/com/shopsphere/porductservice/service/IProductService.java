@@ -43,8 +43,15 @@ public interface IProductService {
 
     /**
      *
-     * @param file - image
+     * @param image - image
      * @param productName - name of the product
      */
     void updateProductImage(final MultipartFile image, final String productName) throws Exception;
+
+    /**
+     *
+     * @param productName - name of the product
+     * @return - True if product was deleted successfully
+     */
+    boolean removeProductByName(final String productName);
 }
