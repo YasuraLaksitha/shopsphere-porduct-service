@@ -172,7 +172,7 @@ public class ProductServiceImpl implements IProductService {
 
 
         final String uploadImage = fileService.uploadImage(image, productImageUrl);
-        productEntity.setProductImage(uploadImage);
+        productEntity.setProductImage(createImageUrl(uploadImage));
         productRepository.save(productEntity);
     }
 
@@ -201,5 +201,9 @@ public class ProductServiceImpl implements IProductService {
         Objects.requireNonNull(productPrice);
 
         return productPrice - productSpecialPrice;
+    }
+
+    private String createImageUrl(final String string) {
+        return productImageUrl.endsWith("/") ? productImageUrl + string : productImageUrl + "/" + string;
     }
 }
