@@ -5,6 +5,7 @@ import com.shopsphere.porductservice.dto.PaginationResponseDTO;
 import com.shopsphere.porductservice.dto.ProductDTO;
 import com.shopsphere.porductservice.entity.CategoryEntity;
 import com.shopsphere.porductservice.entity.ProductEntity;
+import com.shopsphere.porductservice.exceptions.NoModificationRequiredException;
 import com.shopsphere.porductservice.exceptions.ResourceAlreadyExistException;
 import com.shopsphere.porductservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.porductservice.repository.CategoryRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -48,11 +50,11 @@ public class ProductServiceImpl implements IProductService {
             productEntity.setProductSpecialPrice(ApplicationDefaultConstants.PRODUCT_SPECIAL_PRICE);
         if (productEntity.getProductQuantity() == null)
             productEntity.setProductQuantity(ApplicationDefaultConstants.PRODUCT_QUANTITY);
-        if (productEntity.getMinimumThreshHoldCount() == null)
-            productEntity.setMinimumThreshHoldCount(ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT);
+        productEntity.setMinimumThreshHoldCount(ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT);
 
         if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
             productEntity.setUnavailable(true);
+
 
         productRepository.save(productEntity);
     }
@@ -63,7 +65,12 @@ public class ProductServiceImpl implements IProductService {
                 productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
-        return objectMapper.convertValue(productEntity, ProductDTO.class);
+
+        final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
+        productDTO.setProductDiscountPrice(calculateProductDiscountPrice(productEntity.getProductSpecialPrice(),
+                productEntity.getProductPrice()));
+
+        return productDTO;
     }
 
     @Override
@@ -97,8 +104,14 @@ public class ProductServiceImpl implements IProductService {
         final Page<ProductEntity> productEntityPage = productRepository.findAll(spec, pageRequest);
 
         final List<ProductDTO> productDTOList = productEntityPage.getContent()
-                .stream().map((productEntity) -> objectMapper.convertValue(productEntity, ProductDTO.class))
-                .toList();
+                .stream().map((productEntity) -> {
+                    final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
+                    productDTO.setProductDiscountPrice(calculateProductDiscountPrice(
+                            productEntity.getProductPrice(),
+                            productEntity.getProductSpecialPrice()
+                    ));
+                    return productDTO;
+                }).toList();
 
         return PaginationResponseDTO.<List<ProductDTO>>builder()
                 .pageNumber(pageNumber)
@@ -108,5 +121,48 @@ public class ProductServiceImpl implements IProductService {
                 .data(productDTOList)
                 .isLastPage(productEntityPage.isLast())
                 .build();
+    }
+
+    @Override
+    public void updateProduct(final ProductDTO productDTO) {
+        final ProductEntity productEntity =
+                productRepository.findByProductNameEndingWithIgnoreCase(productDTO.getProductName()).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productDTO.getProductName())
+                );
+
+        if (Objects.equals(productEntity.getProductSpecialPrice(), productDTO.getProductSpecialPrice()) &&
+                Objects.equals(productEntity.getProductPrice(), productDTO.getProductPrice()) &&
+                Objects.equals(productEntity.getProductDescription(), productDTO.getProductDescription()) &&
+                Objects.equals(productEntity.getProductQuantity(), productDTO.getProductQuantity()) &&
+                Objects.isNull(productDTO.getProductDiscountPrice()))
+            throw new NoModificationRequiredException("Product", "product name", productDTO.getProductName());
+
+        productEntity.setProductPrice(productDTO.getProductPrice());
+        productEntity.setProductSpecialPrice(productDTO.getProductSpecialPrice());
+        productEntity.setProductQuantity(productDTO.getProductQuantity());
+        productEntity.setProductDescription(productDTO.getProductDescription());
+
+        productEntity.setProductSpecialPrice(calculateProductSpecialPrice(
+                productDTO.getProductDiscountPrice(),
+                productDTO.getProductPrice()
+        ));
+        if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
+            productEntity.setUnavailable(true);
+
+        productRepository.save(productEntity);
+    }
+
+    private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {
+        Objects.requireNonNull(productDiscountPrice);
+        Objects.requireNonNull(productPrice);
+
+        return productPrice - productDiscountPrice;
+    }
+
+    private double calculateProductDiscountPrice(final Double productSpecialPrice, final Double productPrice) {
+        Objects.requireNonNull(productSpecialPrice);
+        Objects.requireNonNull(productPrice);
+
+        return productPrice - productSpecialPrice;
     }
 }

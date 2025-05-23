@@ -33,4 +33,10 @@ public interface IProductService {
     PaginationResponseDTO<List<ProductDTO>> retrieveAllProduct(final String category, final int pageNumber,
                                                                final int pageSize, final String sortBy,
                                                                final String sortOrder, final String keyword);
+
+    /**
+     *
+     * @param productDTO - productDTO object
+     */
+    void updateProduct(final ProductDTO productDTO);
 }

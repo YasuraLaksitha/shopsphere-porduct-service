@@ -54,8 +54,21 @@ public class ProductController {
             @RequestParam(defaultValue = ApplicationDefaultConstants.PRODUCT_SORT_BY, required = false) String sortBy,
             @RequestParam(defaultValue = ApplicationDefaultConstants.PRODUCT_SORT_ORDER, required = false) String sortOrder
     ) {
-        final PaginationResponseDTO<List<ProductDTO>> retrieved = productService.retrieveAllProduct(category,
-                pageNumber, pageSize, sortBy, sortOrder, keyword);
+        final PaginationResponseDTO<List<ProductDTO>> retrieved = productService.retrieveAllProduct(
+                category,
+                pageNumber, pageSize, sortBy, sortOrder, keyword
+        );
         return ResponseEntity.ok(retrieved);
+    }
+
+    @PutMapping("/admin/update")
+    public ResponseEntity<ResponseDTO> updateProductDetails(@Valid @RequestBody ProductDTO productDTO) {
+        productService.updateProduct(productDTO);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .status(HttpStatus.OK)
+                        .timestamp(LocalDateTime.now())
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
+                        .build());
     }
 }

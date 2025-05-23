@@ -26,6 +26,6 @@ public class ProductDTO {
     @PositiveOrZero(message = "Product quantity should be zero or positive")
     private Double productDiscountPrice;
 
-    @PositiveOrZero(message = "Product quantity should be zero or positive")
+    @PositiveOrZero(message = "Product special price should be zero or positive")
     private Double productSpecialPrice;
 }
