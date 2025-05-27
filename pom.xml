@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.shopsphere</groupId>
     <artifactId>product-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>product-service</name>
     <description>product-service</description>
@@ -113,7 +113,7 @@
                 <version>3.4.5</version>
                 <configuration>
                     <to>
-                        <image>yasuradev/${project.artifactId}:ss</image>
+                        <image>yasuradev/${project.artifactId}:ss-${project.version}-dev</image>
                     </to>
                 </configuration>
             </plugin>
