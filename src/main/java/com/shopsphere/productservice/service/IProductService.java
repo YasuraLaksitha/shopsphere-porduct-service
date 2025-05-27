@@ -54,4 +54,12 @@ public interface IProductService {
      * @return - True if product was deleted successfully
      */
     boolean removeProductByName(final String productName);
+
+    /**
+     *
+     * @param productName - name of the product
+     * @param quantity - quantity to be checked
+     * @return - true if quantity is available
+     */
+    boolean isProductQuantityAvailable(String productName, Integer quantity);
 }

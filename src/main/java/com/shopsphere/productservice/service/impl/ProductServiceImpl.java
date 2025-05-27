@@ -189,6 +189,15 @@ public class ProductServiceImpl implements IProductService {
         return productEntity.isUnavailable();
     }
 
+    @Override
+    public boolean isProductQuantityAvailable(final String productName, final Integer quantity) {
+        final ProductEntity productEntity =
+                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                );
+        return productEntity.getProductQuantity() - quantity >= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT;
+    }
+
     private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {
         Objects.requireNonNull(productDiscountPrice);
         Objects.requireNonNull(productPrice);

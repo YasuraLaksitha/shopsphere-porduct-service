@@ -7,6 +7,7 @@ import com.shopsphere.productservice.service.IProductService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -74,8 +75,9 @@ public class ProductController {
     }
 
     @PutMapping("/admin/{productName}/image")
-    public ResponseEntity<ResponseDTO> updateImage(@PathVariable String productName,
-                                                   @RequestParam MultipartFile image) throws Exception {
+    public ResponseEntity<ResponseDTO> updateImage(
+            @NotEmpty(message = "Product name is required") @PathVariable String productName,
+            @RequestParam MultipartFile image) throws Exception {
 
         productService.updateProductImage(image, productName);
         return ResponseEntity.status(HttpStatus.OK)
@@ -87,7 +89,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/admin/{productName}")
-    public ResponseEntity<ResponseDTO> removeProduct(@PathVariable final String productName) {
+    public ResponseEntity<ResponseDTO> removeProduct(
+            @NotEmpty(message = "Product name is required") @PathVariable final String productName) {
 
         return productService.removeProductByName(productName) ?
                 ResponseEntity.status(HttpStatus.OK)
@@ -103,5 +106,12 @@ public class ProductController {
                                 .timestamp(LocalDateTime.now())
                                 .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_417)
                                 .build());
+    }
+
+    @GetMapping("/user/check/{productName}")
+    public ResponseEntity<Boolean> checkProductAvailability(
+            @NotEmpty(message = "Product name is required") @PathVariable final String productName,
+            @PositiveOrZero(message = "Quantity should be positive") @RequestParam Integer quantity) {
+        return ResponseEntity.ok(productService.isProductQuantityAvailable(productName, quantity));
     }
 }
