@@ -5,6 +5,7 @@ import com.shopsphere.productservice.dto.ProductDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IProductService {
 
@@ -62,4 +63,10 @@ public interface IProductService {
      * @return - true if quantity is available
      */
     boolean isProductQuantityAvailable(String productName, Integer quantity);
+
+    /**
+     *
+     * @param productQuantityMap - products to be updated
+     */
+    void updateProductQuantites(Map<String,Integer> productQuantityMap);
 }

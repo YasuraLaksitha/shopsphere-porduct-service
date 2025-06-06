@@ -25,6 +25,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -48,7 +49,7 @@ public class ProductServiceImpl implements IProductService {
                 () -> new ResourceNotFoundException("Category", "category name", category)
         );
 
-        productRepository.findByProductNameEndingWithIgnoreCase(productDTO.getProductName()).ifPresent((entity) -> {
+        productRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).ifPresent((entity) -> {
             throw new ResourceAlreadyExistException("Product", "product name", entity.getProductName());
         });
 
@@ -71,7 +72,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public ProductDTO retrieveProductByName(final String productName) {
         final ProductEntity productEntity =
-                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
 
@@ -137,7 +138,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public void updateProduct(final ProductDTO productDTO) {
         final ProductEntity productEntity =
-                productRepository.findByProductNameEndingWithIgnoreCase(productDTO.getProductName()).orElseThrow(
+                productRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productDTO.getProductName())
                 );
 
@@ -166,7 +167,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public void updateProductImage(final MultipartFile image, final String productName) throws Exception {
         final ProductEntity productEntity =
-                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
 
@@ -179,7 +180,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public boolean removeProductByName(final String productName) {
         final ProductEntity productEntity =
-                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
         if (productEntity.isUnavailable())
@@ -192,10 +193,23 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public boolean isProductQuantityAvailable(final String productName, final Integer quantity) {
         final ProductEntity productEntity =
-                productRepository.findByProductNameEndingWithIgnoreCase(productName).orElseThrow(
+                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
         return productEntity.getProductQuantity() - quantity >= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT;
+    }
+
+    @Override
+    public void updateProductQuantites(Map<String, Integer> productQuantityMap) {
+        productQuantityMap.forEach((productName, quantity) ->
+                productRepository.findByProductNameStartsWithIgnoreCase(productName).ifPresent(productEntity -> {
+
+                    productEntity.setProductQuantity(productEntity.getProductQuantity() - quantity);
+                    if (productEntity.getMinimumThreshHoldCount() >= productEntity.getProductQuantity())
+                        productEntity.setUnavailable(true);
+
+                    productRepository.save(productEntity);
+                }));
     }
 
     private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {

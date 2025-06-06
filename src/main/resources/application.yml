@@ -20,6 +20,16 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: create
+  cloud:
+    stream:
+      bindings:
+        productQuantityUpdate-in-0:
+          destination: send-productUpdate
+          group: ${spring.application.name}
+      kafka:
+        binder:
+          brokers:
+            - localhost:9092
 
 management:
   endpoints:
