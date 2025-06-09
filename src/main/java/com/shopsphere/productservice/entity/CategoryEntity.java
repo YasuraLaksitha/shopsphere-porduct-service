@@ -14,10 +14,12 @@ public class CategoryEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(unique = true, nullable = false,updatable = false)
+    @Column(name = "category_name", unique = true, nullable = false, updatable = false)
     private String categoryName;
 
+    @Column(name = "category_description")
     private String categoryDescription;
 }

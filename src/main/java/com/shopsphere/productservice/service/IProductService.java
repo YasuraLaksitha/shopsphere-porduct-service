@@ -2,18 +2,11 @@ package com.shopsphere.productservice.service;
 
 import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.dto.ProductDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
 public interface IProductService {
-
-    /**
-     *
-     * @param productDTO - productDTO object
-     */
-    void persistProduct(final ProductDTO productDTO, final String category);
 
     /**
      *
@@ -35,27 +28,6 @@ public interface IProductService {
     PaginationResponseDTO<List<ProductDTO>> retrieveAllProduct(final String category, final int pageNumber,
                                                                final int pageSize, final String sortBy,
                                                                final String sortOrder, final String keyword);
-
-    /**
-     *
-     * @param productDTO - productDTO object
-     */
-    void updateProduct(final ProductDTO productDTO);
-
-    /**
-     *
-     * @param image - image
-     * @param productName - name of the product
-     */
-    void updateProductImage(final MultipartFile image, final String productName) throws Exception;
-
-    /**
-     *
-     * @param productName - name of the product
-     * @return - True if product was deleted successfully
-     */
-    boolean removeProductByName(final String productName);
-
     /**
      *
      * @param productName - name of the product
@@ -68,5 +40,5 @@ public interface IProductService {
      *
      * @param productQuantityMap - products to be updated
      */
-    void updateProductQuantites(Map<String,Integer> productQuantityMap);
+    void updateProductQuantities(Map<String,Integer> productQuantityMap);
 }

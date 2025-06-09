@@ -30,5 +30,6 @@ public class BaseEntity {
     @Column(insertable = false ,name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_unavailable")
     private boolean isUnavailable;
 }

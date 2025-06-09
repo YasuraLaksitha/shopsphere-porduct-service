@@ -1,15 +1,11 @@
 package com.shopsphere.productservice.service.impl;
 
-import ch.qos.logback.core.util.StringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopsphere.productservice.dto.CategoryDTO;
 import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.entity.CategoryEntity;
-import com.shopsphere.productservice.exceptions.NoModificationRequiredException;
-import com.shopsphere.productservice.exceptions.ResourceAlreadyExistException;
-import com.shopsphere.productservice.exceptions.ResourceAlreadyUnavailableException;
 import com.shopsphere.productservice.exceptions.ResourceNotFoundException;
-import com.shopsphere.productservice.repository.CategoryRepository;
+import com.shopsphere.productservice.repository.read.CategoryRepository;
 import com.shopsphere.productservice.service.ICategoryService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +25,6 @@ public class CategoryServiceImpl implements ICategoryService {
     private final CategoryRepository categoryRepository;
 
     private final ObjectMapper objectMapper;
-
-    @Override
-    public void persistCategory(final CategoryDTO category) {
-        categoryRepository.findByCategoryNameIgnoreCase(category.getCategoryName()).ifPresent((existingCategory) -> {
-            throw new ResourceAlreadyExistException("Category", "Category name", existingCategory.getCategoryName());
-        });
-
-        if (StringUtil.isNullOrEmpty(category.getCategoryDescription()))
-            category.setCategoryDescription(category.getCategoryName());
-
-        categoryRepository.save(objectMapper.convertValue(category, CategoryEntity.class));
-    }
 
     @Override
     public CategoryDTO retrieveCategoryByName(final String categoryName) {
@@ -86,36 +70,5 @@ public class CategoryServiceImpl implements ICategoryService {
                 .pageSize(pageSize)
                 .isLastPage(categoryEntityPage.isLast())
                 .build();
-    }
-
-    @Override
-    public void updateCategoryByName(final CategoryDTO category) {
-        final CategoryEntity categoryEntity =
-                categoryRepository.findByCategoryNameIgnoreCase(category.getCategoryName())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Category", "category name", category.getCategoryName())
-                        );
-        if (categoryEntity.getCategoryDescription().equals(category.getCategoryDescription())) {
-            throw new NoModificationRequiredException("Category", "category name", category.getCategoryName());
-        }
-        categoryEntity.setCategoryDescription(category.getCategoryDescription());
-        categoryRepository.save(categoryEntity);
-    }
-
-    @Override
-    public boolean deleteCategoryByName(final String categoryName) {
-
-        final CategoryEntity categoryEntity =
-                categoryRepository.findByCategoryNameIgnoreCase(categoryName).orElseThrow(
-                        () -> new ResourceNotFoundException("Category", "category name", categoryName)
-                );
-
-        if (categoryEntity.isUnavailable())
-            throw new ResourceAlreadyUnavailableException("Category", "category name", categoryName);
-
-        categoryEntity.setUnavailable(true);
-        categoryRepository.save(categoryEntity);
-
-        return true;
     }
 }

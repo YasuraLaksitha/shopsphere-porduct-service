@@ -1,4 +1,4 @@
-package com.shopsphere.productservice.repository;
+package com.shopsphere.productservice.repository.read;
 
 import com.shopsphere.productservice.entity.CategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

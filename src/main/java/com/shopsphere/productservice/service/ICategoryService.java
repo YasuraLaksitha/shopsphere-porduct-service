@@ -10,12 +10,6 @@ public interface ICategoryService {
 
     /**
      *
-     * @param category - categoryDTO object
-     */
-    void persistCategory(CategoryDTO category);
-
-    /**
-     *
      * @param categoryName - name of category
      * @return categoryDTO
      */
@@ -29,15 +23,4 @@ public interface ICategoryService {
                                                                    final int pageNumber, final int pageSize,
                                                                    final String keyword);
 
-    /**
-     *
-     * @param category
-     */
-    void updateCategoryByName(@Valid CategoryDTO category);
-
-    /**
-     *
-     * @param categoryName - name of category
-     */
-    boolean deleteCategoryByName(@Valid String categoryName);
 }

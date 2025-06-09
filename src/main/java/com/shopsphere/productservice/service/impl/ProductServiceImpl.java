@@ -5,13 +5,11 @@ import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.dto.ProductDTO;
 import com.shopsphere.productservice.entity.CategoryEntity;
 import com.shopsphere.productservice.entity.ProductEntity;
-import com.shopsphere.productservice.exceptions.NoModificationRequiredException;
 import com.shopsphere.productservice.exceptions.ResourceAlreadyExistException;
-import com.shopsphere.productservice.exceptions.ResourceAlreadyUnavailableException;
 import com.shopsphere.productservice.exceptions.ResourceNotFoundException;
-import com.shopsphere.productservice.repository.CategoryRepository;
-import com.shopsphere.productservice.repository.ProductRepository;
-import com.shopsphere.productservice.service.IFileService;
+import com.shopsphere.productservice.repository.read.CategoryRepository;
+import com.shopsphere.productservice.repository.read.ProductReadRepository;
+import com.shopsphere.productservice.repository.write.ProductWriteRepository;
 import com.shopsphere.productservice.service.IProductService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -32,47 +29,21 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
 
-    private final ProductRepository productRepository;
+    private final ProductReadRepository productReadRepository;
+
+    private final ProductWriteRepository productWriteRepository;
 
     private final CategoryRepository categoryRepository;
 
     private final ObjectMapper objectMapper;
 
-    private final IFileService fileService;
-
     @Value("${images.products.url}")
     private String productImageUrl;
 
     @Override
-    public void persistProduct(final ProductDTO productDTO, final String category) {
-        final CategoryEntity categoryEntity = categoryRepository.findByCategoryNameIgnoreCase(category).orElseThrow(
-                () -> new ResourceNotFoundException("Category", "category name", category)
-        );
-
-        productRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).ifPresent((entity) -> {
-            throw new ResourceAlreadyExistException("Product", "product name", entity.getProductName());
-        });
-
-        final ProductEntity productEntity = objectMapper.convertValue(productDTO, ProductEntity.class);
-        productEntity.setCategoryId(categoryEntity.getCategoryId());
-
-        if (productEntity.getProductSpecialPrice() == null)
-            productEntity.setProductSpecialPrice(ApplicationDefaultConstants.PRODUCT_SPECIAL_PRICE);
-        if (productEntity.getProductQuantity() == null)
-            productEntity.setProductQuantity(ApplicationDefaultConstants.PRODUCT_QUANTITY);
-        productEntity.setMinimumThreshHoldCount(ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT);
-
-        if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
-            productEntity.setUnavailable(true);
-
-
-        productRepository.save(productEntity);
-    }
-
-    @Override
     public ProductDTO retrieveProductByName(final String productName) {
         final ProductEntity productEntity =
-                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
+                productReadRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
 
@@ -113,11 +84,12 @@ public class ProductServiceImpl implements IProductService {
         final Sort sortOrderBy = Sort.by(sortDirection, sortBy);
         final PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sortOrderBy);
 
-        final Page<ProductEntity> productEntityPage = productRepository.findAll(spec, pageRequest);
+        final Page<ProductEntity> productEntityPage = productReadRepository.findAll(spec, pageRequest);
 
         final List<ProductDTO> productDTOList = productEntityPage.getContent()
-                .stream().map((productEntity) -> {
+                .stream().map(productEntity -> {
                     final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
+                    productDTO.setProductImage(createImageUrl(productEntity.getProductImage()));
                     productDTO.setProductDiscountPrice(calculateProductDiscountPrice(
                             productEntity.getProductPrice(),
                             productEntity.getProductSpecialPrice()
@@ -136,87 +108,25 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public void updateProduct(final ProductDTO productDTO) {
-        final ProductEntity productEntity =
-                productRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productDTO.getProductName())
-                );
-
-        if (Objects.equals(productEntity.getProductSpecialPrice(), productDTO.getProductSpecialPrice()) &&
-                Objects.equals(productEntity.getProductPrice(), productDTO.getProductPrice()) &&
-                Objects.equals(productEntity.getProductDescription(), productDTO.getProductDescription()) &&
-                Objects.equals(productEntity.getProductQuantity(), productDTO.getProductQuantity()) &&
-                Objects.isNull(productDTO.getProductDiscountPrice()))
-            throw new NoModificationRequiredException("Product", "product name", productDTO.getProductName());
-
-        productEntity.setProductPrice(productDTO.getProductPrice());
-        productEntity.setProductSpecialPrice(productDTO.getProductSpecialPrice());
-        productEntity.setProductQuantity(productDTO.getProductQuantity());
-        productEntity.setProductDescription(productDTO.getProductDescription());
-
-        productEntity.setProductSpecialPrice(calculateProductSpecialPrice(
-                productDTO.getProductDiscountPrice(),
-                productDTO.getProductPrice()
-        ));
-        if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
-            productEntity.setUnavailable(true);
-
-        productRepository.save(productEntity);
-    }
-
-    @Override
-    public void updateProductImage(final MultipartFile image, final String productName) throws Exception {
-        final ProductEntity productEntity =
-                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
-                );
-
-
-        final String uploadImage = fileService.uploadImage(image, productImageUrl);
-        productEntity.setProductImage(createImageUrl(uploadImage));
-        productRepository.save(productEntity);
-    }
-
-    @Override
-    public boolean removeProductByName(final String productName) {
-        final ProductEntity productEntity =
-                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
-                );
-        if (productEntity.isUnavailable())
-            throw new ResourceAlreadyUnavailableException("Product", "product name", productName);
-        productEntity.setUnavailable(true);
-
-        return productEntity.isUnavailable();
-    }
-
-    @Override
     public boolean isProductQuantityAvailable(final String productName, final Integer quantity) {
         final ProductEntity productEntity =
-                productRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
+                productReadRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)
                 );
         return productEntity.getProductQuantity() - quantity >= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT;
     }
 
     @Override
-    public void updateProductQuantites(Map<String, Integer> productQuantityMap) {
+    public void updateProductQuantities(Map<String, Integer> productQuantityMap) {
         productQuantityMap.forEach((productName, quantity) ->
-                productRepository.findByProductNameStartsWithIgnoreCase(productName).ifPresent(productEntity -> {
+                productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).ifPresent(productEntity -> {
 
                     productEntity.setProductQuantity(productEntity.getProductQuantity() - quantity);
                     if (productEntity.getMinimumThreshHoldCount() >= productEntity.getProductQuantity())
                         productEntity.setUnavailable(true);
 
-                    productRepository.save(productEntity);
+                    productWriteRepository.save(productEntity);
                 }));
-    }
-
-    private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {
-        Objects.requireNonNull(productDiscountPrice);
-        Objects.requireNonNull(productPrice);
-
-        return productPrice - productDiscountPrice;
     }
 
     private double calculateProductDiscountPrice(final Double productSpecialPrice, final Double productPrice) {

@@ -12,6 +12,6 @@ public class ProductFunctions {
 
     @Bean
     public Consumer<Map<String, Integer>> productQuantityUpdate(IProductService productService) {
-        return productService::updateProductQuantites;
+        return productService::updateProductQuantities;
     }
 }
