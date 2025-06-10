@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,19 +16,19 @@ import java.time.LocalDateTime;
 public class BaseEntity {
 
     @CreatedBy
-    @Column(updatable = false,name = "created_by")
+    @Column(updatable = false, name = "created_by")
     private String createdBy;
 
     @CreationTimestamp
-    @Column(updatable = false,name = "created_at")
+    @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
 
     @LastModifiedBy
-    @Column(insertable = false ,name = "updated_by")
+    @Column(insertable = false, name = "updated_by")
     private String updatedBy;
 
     @UpdateTimestamp
-    @Column(insertable = false ,name = "updated_at")
+    @Column(insertable = false, name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "is_unavailable")

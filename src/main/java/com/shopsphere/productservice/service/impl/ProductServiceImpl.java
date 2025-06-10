@@ -5,7 +5,6 @@ import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.dto.ProductDTO;
 import com.shopsphere.productservice.entity.CategoryEntity;
 import com.shopsphere.productservice.entity.ProductEntity;
-import com.shopsphere.productservice.exceptions.ResourceAlreadyExistException;
 import com.shopsphere.productservice.exceptions.ResourceNotFoundException;
 import com.shopsphere.productservice.repository.read.CategoryRepository;
 import com.shopsphere.productservice.repository.read.ProductReadRepository;
@@ -14,6 +13,8 @@ import com.shopsphere.productservice.service.IProductService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -41,6 +42,7 @@ public class ProductServiceImpl implements IProductService {
     private String productImageUrl;
 
     @Override
+    @Cacheable(value = "products", key = "#productName")
     public ProductDTO retrieveProductByName(final String productName) {
         final ProductEntity productEntity =
                 productReadRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
@@ -117,6 +119,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @CachePut(value = "products", key = "#productName")
     public void updateProductQuantities(Map<String, Integer> productQuantityMap) {
         productQuantityMap.forEach((productName, quantity) ->
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).ifPresent(productEntity -> {
