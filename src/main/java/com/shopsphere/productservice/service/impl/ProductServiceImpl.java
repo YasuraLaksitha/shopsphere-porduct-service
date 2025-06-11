@@ -13,7 +13,8 @@ import com.shopsphere.productservice.service.IProductService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +36,8 @@ public class ProductServiceImpl implements IProductService {
     private final ProductWriteRepository productWriteRepository;
 
     private final CategoryRepository categoryRepository;
+
+    private final CacheManager cacheManager;
 
     private final ObjectMapper objectMapper;
 
@@ -119,16 +122,27 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    @CachePut(value = "products", key = "#productName")
     public void updateProductQuantities(Map<String, Integer> productQuantityMap) {
         productQuantityMap.forEach((productName, quantity) ->
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).ifPresent(productEntity -> {
 
                     productEntity.setProductQuantity(productEntity.getProductQuantity() - quantity);
+
                     if (productEntity.getMinimumThreshHoldCount() >= productEntity.getProductQuantity())
                         productEntity.setUnavailable(true);
 
                     productWriteRepository.save(productEntity);
+
+                    final Cache cache = cacheManager.getCache("product");
+                    if (cache != null) {
+                        if (productEntity.isUnavailable())
+                            cache.evict(productEntity.getProductName());
+                        else {
+                            final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
+                            productDTO.setProductImage(createImageUrl(productEntity.getProductImage()));
+                            cache.put(productName, productDTO);
+                        }
+                    }
                 }));
     }
 
