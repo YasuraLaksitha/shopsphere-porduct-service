@@ -2,11 +2,40 @@ package com.shopsphere.productservice.service;
 
 import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.dto.ProductDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
 public interface IProductService {
+
+    /**
+     *
+     * @param productDTO - productDTO object
+     * @param category - category name
+     */
+    void persistProduct(ProductDTO productDTO, String category);
+
+    /**
+     *
+     * @param productDTO - productDTO object
+     */
+    void updateProduct(ProductDTO productDTO);
+
+    /**
+     *
+     * @param image - product image
+     * @param productName - product name
+     * @throws Exception - exception
+     */
+    void updateProductImage(MultipartFile image, String productName) throws Exception;
+
+    /**
+     *
+     * @param productName - product name
+     * @return - true if removed
+     */
+    boolean removeProductByName(String productName);
 
     /**
      *

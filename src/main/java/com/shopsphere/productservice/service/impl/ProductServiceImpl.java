@@ -5,16 +5,21 @@ import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.dto.ProductDTO;
 import com.shopsphere.productservice.entity.CategoryEntity;
 import com.shopsphere.productservice.entity.ProductEntity;
+import com.shopsphere.productservice.exceptions.NoModificationRequiredException;
+import com.shopsphere.productservice.exceptions.ResourceAlreadyExistException;
+import com.shopsphere.productservice.exceptions.ResourceAlreadyUnavailableException;
 import com.shopsphere.productservice.exceptions.ResourceNotFoundException;
-import com.shopsphere.productservice.repository.read.CategoryRepository;
+import com.shopsphere.productservice.repository.read.CategoryReadRepository;
 import com.shopsphere.productservice.repository.read.ProductReadRepository;
 import com.shopsphere.productservice.repository.write.ProductWriteRepository;
+import com.shopsphere.productservice.service.IFileService;
 import com.shopsphere.productservice.service.IProductService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -35,14 +41,115 @@ public class ProductServiceImpl implements IProductService {
 
     private final ProductWriteRepository productWriteRepository;
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryReadRepository categoryReadRepository;
 
     private final CacheManager cacheManager;
 
     private final ObjectMapper objectMapper;
 
+    private final IFileService fileService;
+
     @Value("${images.products.url}")
     private String productImageUrl;
+
+    @Override
+    public void persistProduct(final ProductDTO productDTO, final String category) {
+        final CategoryEntity categoryEntity = categoryReadRepository.findByCategoryNameIgnoreCase(category).orElseThrow(
+                () -> new ResourceNotFoundException("Category", "category name", category)
+        );
+
+        productWriteRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).ifPresent((entity) -> {
+            throw new ResourceAlreadyExistException("Product", "product name", entity.getProductName());
+        });
+
+        final ProductEntity productEntity = objectMapper.convertValue(productDTO, ProductEntity.class);
+        productEntity.setCategoryId(categoryEntity.getCategoryId());
+
+        if (productEntity.getProductSpecialPrice() == null)
+            productEntity.setProductSpecialPrice(ApplicationDefaultConstants.PRODUCT_SPECIAL_PRICE);
+        if (productEntity.getProductQuantity() == null)
+            productEntity.setProductQuantity(ApplicationDefaultConstants.PRODUCT_QUANTITY);
+        productEntity.setMinimumThreshHoldCount(ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT);
+
+        if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
+            productEntity.setUnavailable(true);
+
+        productWriteRepository.save(productEntity);
+    }
+
+    @Override
+    public void updateProduct(final ProductDTO productDTO) {
+        final ProductEntity productEntity =
+                productWriteRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productDTO.getProductName())
+                );
+
+        if (Objects.equals(productEntity.getProductSpecialPrice(), productDTO.getProductSpecialPrice()) &&
+                Objects.equals(productEntity.getProductPrice(), productDTO.getProductPrice()) &&
+                Objects.equals(productEntity.getProductDescription(), productDTO.getProductDescription()) &&
+                Objects.equals(productEntity.getProductQuantity(), productDTO.getProductQuantity()) &&
+                Objects.isNull(productDTO.getProductDiscountPrice()))
+            throw new NoModificationRequiredException("Product", "product name", productDTO.getProductName());
+
+        productEntity.setProductPrice(productDTO.getProductPrice());
+        productEntity.setProductSpecialPrice(productDTO.getProductSpecialPrice());
+        productEntity.setProductQuantity(productDTO.getProductQuantity());
+        productEntity.setProductDescription(productDTO.getProductDescription());
+
+        productEntity.setProductSpecialPrice(calculateProductSpecialPrice(
+                productDTO.getProductDiscountPrice(),
+                productDTO.getProductPrice()
+        ));
+        if (productEntity.getProductQuantity() <= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT)
+            productEntity.setUnavailable(true);
+
+        productWriteRepository.save(productEntity);
+        updateCache(productEntity.getProductName(), productEntity);
+    }
+
+    @Override
+    public void updateProductImage(final MultipartFile image, final String productName) throws Exception {
+        final ProductEntity productEntity =
+                productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                );
+
+        final String uploadImage = fileService.uploadImage(image, productImageUrl);
+        productEntity.setProductImage(createImageUrl(uploadImage));
+        productWriteRepository.save(productEntity);
+
+        updateCache(productName, productEntity);
+    }
+
+    private void updateCache(String productName, ProductEntity productEntity) {
+        final Cache cache = cacheManager.getCache("product");
+        if (cache != null) {
+            final ProductDTO dto = objectMapper.convertValue(productEntity, ProductDTO.class);
+            cache.put(productName, dto);
+        }
+    }
+
+    @CacheEvict(value = "product", key = "#productName")
+    @Override
+    public boolean removeProductByName(final String productName) {
+        final ProductEntity productEntity =
+                productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                );
+        if (productEntity.isUnavailable())
+            throw new ResourceAlreadyUnavailableException("Product", "product name", productName);
+        productEntity.setUnavailable(true);
+        productWriteRepository.save(productEntity);
+
+        return productEntity.isUnavailable();
+    }
+
+    private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {
+        Objects.requireNonNull(productDiscountPrice);
+        Objects.requireNonNull(productPrice);
+
+        return productPrice - productDiscountPrice;
+    }
 
     @Override
     @Cacheable(value = "products", key = "#productName")
@@ -61,12 +168,13 @@ public class ProductServiceImpl implements IProductService {
         return productDTO;
     }
 
+
     @Override
     public PaginationResponseDTO<List<ProductDTO>> retrieveAllProduct(final String category, final int pageNumber,
                                                                       final int pageSize, final String sortBy,
                                                                       final String sortOrder, final String keyword) {
 
-        final CategoryEntity categoryEntity = categoryRepository.findByCategoryNameIgnoreCase(category).orElseThrow(
+        final CategoryEntity categoryEntity = categoryReadRepository.findByCategoryNameIgnoreCase(category).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "category name", category)
         );
         Specification<ProductEntity> spec = Specification.where(null);

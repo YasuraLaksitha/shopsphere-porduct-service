@@ -2,11 +2,16 @@ package com.shopsphere.productservice.service;
 
 import com.shopsphere.productservice.dto.CategoryDTO;
 import com.shopsphere.productservice.dto.PaginationResponseDTO;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
 public interface ICategoryService {
+
+    void persistCategory(CategoryDTO category);
+
+    void updateCategoryByName(CategoryDTO category);
+
+    boolean deleteCategoryByName(String categoryName);
 
     /**
      *
