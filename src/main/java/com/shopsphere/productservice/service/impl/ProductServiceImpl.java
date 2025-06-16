@@ -144,6 +144,20 @@ public class ProductServiceImpl implements IProductService {
         return productEntity.isUnavailable();
     }
 
+    @Override
+    public boolean enableProductByName(String productName) {
+        final ProductEntity productEntity =
+                productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
+                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                );
+        if (!productEntity.isUnavailable())
+            throw new ResourceAlreadyExistException("Product", "product name", productName);
+        productEntity.setUnavailable(false);
+        productWriteRepository.save(productEntity);
+
+        return !productEntity.isUnavailable();
+    }
+
     private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {
         Objects.requireNonNull(productDiscountPrice);
         Objects.requireNonNull(productPrice);
@@ -167,7 +181,6 @@ public class ProductServiceImpl implements IProductService {
 
         return productDTO;
     }
-
 
     @Override
     public PaginationResponseDTO<List<ProductDTO>> retrieveAllProduct(final String category, final int pageNumber,
@@ -202,7 +215,6 @@ public class ProductServiceImpl implements IProductService {
         final List<ProductDTO> productDTOList = productEntityPage.getContent()
                 .stream().map(productEntity -> {
                     final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
-                    productDTO.setProductImage(createImageUrl(productEntity.getProductImage()));
                     productDTO.setProductDiscountPrice(calculateProductDiscountPrice(
                             productEntity.getProductPrice(),
                             productEntity.getProductSpecialPrice()

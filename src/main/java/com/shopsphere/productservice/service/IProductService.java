@@ -39,6 +39,13 @@ public interface IProductService {
 
     /**
      *
+     * @param productName - product name
+     * @return - true if enabled
+     */
+    boolean enableProductByName(String productName);
+
+    /**
+     *
      * @param productName - name of product
      * @return productDTO object
      */

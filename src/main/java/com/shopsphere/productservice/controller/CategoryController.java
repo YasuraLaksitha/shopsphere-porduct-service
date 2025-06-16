@@ -36,9 +36,8 @@ public class CategoryController {
                         .build());
     }
 
-
     @PutMapping("/admin/update")
-    public ResponseEntity<ResponseDTO> update(@Valid @RequestBody CategoryDTO category) {
+    public ResponseEntity<ResponseDTO> updateCategoryDetails(@Valid @RequestBody CategoryDTO category) {
         categoryService.updateCategoryByName(category);
         return ResponseEntity.ok().body(ResponseDTO.builder()
                 .status(HttpStatus.OK)
@@ -66,7 +65,7 @@ public class CategoryController {
                         .build());
     }
 
-    @GetMapping("/admin/get/{name}")
+    @GetMapping("/public/get/{name}")
     public ResponseEntity<CategoryDTO> getByName(
             @Pattern(regexp = "[a-zA-Z]+", message = "Invalid category name")
             @PathVariable final String name

@@ -65,6 +65,24 @@ public class ProductController {
                         .build());
     }
 
+    @PutMapping("/admin/{productName}/enable")
+    public ResponseEntity<ResponseDTO> enableProduct(@PathVariable final String productName){
+        return productService.enableProductByName(productName) ?
+                ResponseEntity.status(HttpStatus.OK)
+                        .body(ResponseDTO.builder()
+                                .status(HttpStatus.OK)
+                                .timestamp(LocalDateTime.now())
+                                .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
+                                .build()) :
+
+                ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+                        .body(ResponseDTO.builder()
+                                .status(HttpStatus.EXPECTATION_FAILED)
+                                .timestamp(LocalDateTime.now())
+                                .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_417)
+                                .build());
+    }
+
     @DeleteMapping("/admin/{productName}")
     public ResponseEntity<ResponseDTO> removeProduct(
             @NotEmpty(message = "Product name is required") @PathVariable final String productName) {
@@ -107,7 +125,6 @@ public class ProductController {
         );
         return ResponseEntity.ok(retrieved);
     }
-
 
     @GetMapping("/public/check/{productName}")
     public ResponseEntity<Boolean> checkProductAvailability(
