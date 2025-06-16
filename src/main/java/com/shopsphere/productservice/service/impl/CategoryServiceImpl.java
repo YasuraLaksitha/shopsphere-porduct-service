@@ -60,8 +60,7 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
-    public boolean deleteCategoryByName(final String categoryName) {
-
+    public boolean disableCategoryByName(final String categoryName) {
         final CategoryEntity categoryEntity =
                 categoryWriteRepository.findByCategoryNameIgnoreCase(categoryName).orElseThrow(
                         () -> new ResourceNotFoundException("Category", "category name", categoryName)
@@ -71,6 +70,22 @@ public class CategoryServiceImpl implements ICategoryService {
             throw new ResourceAlreadyUnavailableException("Category", "category name", categoryName);
 
         categoryEntity.setUnavailable(true);
+        categoryWriteRepository.save(categoryEntity);
+
+        return true;
+    }
+
+    @Override
+    public boolean enableCategoryByName(String categoryName) {
+        final CategoryEntity categoryEntity =
+                categoryWriteRepository.findByCategoryNameIgnoreCase(categoryName).orElseThrow(
+                        () -> new ResourceNotFoundException("Category", "category name", categoryName)
+                );
+
+        if (!categoryEntity.isUnavailable())
+            throw new ResourceAlreadyExistException("Category", "category name", categoryName);
+
+        categoryEntity.setUnavailable(false);
         categoryWriteRepository.save(categoryEntity);
 
         return true;

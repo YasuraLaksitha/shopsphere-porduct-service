@@ -11,7 +11,14 @@ public interface ICategoryService {
 
     void updateCategoryByName(CategoryDTO category);
 
-    boolean deleteCategoryByName(String categoryName);
+    boolean disableCategoryByName(String categoryName);
+
+    /**
+     *
+     * @param categoryName - category name
+     * @return - true if enabled
+     */
+    boolean enableCategoryByName(String categoryName);
 
     /**
      *

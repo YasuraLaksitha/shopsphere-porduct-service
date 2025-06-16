@@ -46,12 +46,31 @@ public class CategoryController {
                 .build());
     }
 
-    @DeleteMapping("/admin/delete/{name}")
-    public ResponseEntity<ResponseDTO> delete(
+    @PutMapping("/admin/{categoryName}/disable")
+    public ResponseEntity<ResponseDTO> disable(
             @Pattern(regexp = "[a-zA-Z]+", message = "Invalid category name")
-            @PathVariable final String name
+            @PathVariable final String categoryName
     ) {
-        return categoryService.deleteCategoryByName(name) ?
+        return categoryService.disableCategoryByName(categoryName) ?
+                ResponseEntity.ok().body(ResponseDTO.builder()
+                        .status(HttpStatus.OK)
+                        .timestamp(LocalDateTime.now())
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_200)
+                        .build()) :
+
+                ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(ResponseDTO.builder()
+                        .status(HttpStatus.EXPECTATION_FAILED)
+                        .timestamp(LocalDateTime.now())
+                        .message(ApplicationDefaultConstants.RESPONSE_MESSAGE_417)
+                        .build());
+    }
+
+    @PutMapping("/admin/{categoryName}/enable")
+    public ResponseEntity<ResponseDTO> enable(
+            @Pattern(regexp = "[a-zA-Z]+", message = "Invalid category name")
+            @PathVariable final String categoryName
+    ) {
+        return categoryService.enableCategoryByName(categoryName) ?
                 ResponseEntity.ok().body(ResponseDTO.builder()
                         .status(HttpStatus.OK)
                         .timestamp(LocalDateTime.now())
