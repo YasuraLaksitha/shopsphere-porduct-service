@@ -51,10 +51,10 @@ public class ProductController {
                         .build());
     }
 
-    @PutMapping("/admin/{productName}/image")
+    @PutMapping(path = "/admin/{productName}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDTO> updateImage(
             @NotEmpty(message = "Product name is required") @PathVariable String productName,
-            @RequestParam MultipartFile image) throws Exception {
+            @RequestPart("file") MultipartFile image) throws Exception {
 
         productService.updateProductImage(image, productName);
         return ResponseEntity.status(HttpStatus.OK)
@@ -66,7 +66,7 @@ public class ProductController {
     }
 
     @PutMapping("/admin/{productName}/enable")
-    public ResponseEntity<ResponseDTO> enableProduct(@PathVariable final String productName){
+    public ResponseEntity<ResponseDTO> enableProduct(@PathVariable final String productName) {
         return productService.enableProductByName(productName) ?
                 ResponseEntity.status(HttpStatus.OK)
                         .body(ResponseDTO.builder()
@@ -83,11 +83,10 @@ public class ProductController {
                                 .build());
     }
 
-    @DeleteMapping("/admin/{productName}")
-    public ResponseEntity<ResponseDTO> removeProduct(
+    @PutMapping("/admin/{productName}/disable")
+    public ResponseEntity<ResponseDTO> disableProduct(
             @NotEmpty(message = "Product name is required") @PathVariable final String productName) {
-
-        return productService.removeProductByName(productName) ?
+        return productService.disableProductByName(productName) ?
                 ResponseEntity.status(HttpStatus.OK)
                         .body(ResponseDTO.builder()
                                 .status(HttpStatus.OK)

@@ -131,7 +131,7 @@ public class ProductServiceImpl implements IProductService {
 
     @CacheEvict(value = "product", key = "#productName")
     @Override
-    public boolean removeProductByName(final String productName) {
+    public boolean disableProductByName(final String productName) {
         final ProductEntity productEntity =
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
                         () -> new ResourceNotFoundException("Product", "product name", productName)

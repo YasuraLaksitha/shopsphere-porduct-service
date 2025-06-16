@@ -35,7 +35,7 @@ public interface IProductService {
      * @param productName - product name
      * @return - true if removed
      */
-    boolean removeProductByName(String productName);
+    boolean disableProductByName(String productName);
 
     /**
      *

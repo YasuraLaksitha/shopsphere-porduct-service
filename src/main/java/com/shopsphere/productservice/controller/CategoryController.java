@@ -47,7 +47,7 @@ public class CategoryController {
     }
 
     @PutMapping("/admin/{categoryName}/disable")
-    public ResponseEntity<ResponseDTO> disable(
+    public ResponseEntity<ResponseDTO> disableCategory(
             @Pattern(regexp = "[a-zA-Z]+", message = "Invalid category name")
             @PathVariable final String categoryName
     ) {
@@ -66,7 +66,7 @@ public class CategoryController {
     }
 
     @PutMapping("/admin/{categoryName}/enable")
-    public ResponseEntity<ResponseDTO> enable(
+    public ResponseEntity<ResponseDTO> enableCategory(
             @Pattern(regexp = "[a-zA-Z]+", message = "Invalid category name")
             @PathVariable final String categoryName
     ) {
