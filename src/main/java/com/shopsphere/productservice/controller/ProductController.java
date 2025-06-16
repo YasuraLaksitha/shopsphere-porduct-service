@@ -2,26 +2,21 @@ package com.shopsphere.productservice.controller;
 
 import com.shopsphere.productservice.dto.PaginationResponseDTO;
 import com.shopsphere.productservice.dto.ProductDTO;
-import com.shopsphere.productservice.dto.ResponseDTO;
 import com.shopsphere.productservice.service.IProductService;
 import com.shopsphere.productservice.utils.ApplicationDefaultConstants;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/products", produces = {MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(value = "/api", produces = {MediaType.APPLICATION_JSON_VALUE})
 @Validated
 public class ProductController {
 
@@ -51,7 +46,7 @@ public class ProductController {
     }
 
 
-    @GetMapping("/user/check/{productName}")
+    @GetMapping("/public/check/{productName}")
     public ResponseEntity<Boolean> checkProductAvailability(
             @NotEmpty(message = "Product name is required") @PathVariable final String productName,
             @PositiveOrZero(message = "Quantity should be positive") @RequestParam Integer quantity) {
