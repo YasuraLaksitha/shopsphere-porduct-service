@@ -1,5 +1,6 @@
 package com.shopsphere.productservice.audit;
 
+import com.shopsphere.productservice.context.UserContext;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ public class AuditAwareImpl implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        return Optional.of("PRODUCTS_MS");
+        return Optional.ofNullable(UserContext.get())
+                .or(() -> Optional.of("PRODUCT_MS"));
     }
 }
