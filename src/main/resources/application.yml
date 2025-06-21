@@ -30,6 +30,8 @@ spring:
         dialect:  org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
   cloud:
+    functions:
+      definition: productQuantityUpdate
     stream:
       bindings:
         productQuantityUpdate-in-0:
