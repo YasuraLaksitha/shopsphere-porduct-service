@@ -78,12 +78,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ) {
 
         final ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
-                .status(HttpStatus.BAD_REQUEST.name())
+                .status(HttpStatus.FORBIDDEN.name())
                 .message(ex.getMessage())
                 .path(webRequest.getDescription(false))
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.FORBIDDEN);
     }
 }

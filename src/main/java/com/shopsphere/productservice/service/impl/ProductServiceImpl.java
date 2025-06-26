@@ -190,6 +190,9 @@ public class ProductServiceImpl implements IProductService {
         final CategoryEntity categoryEntity = categoryReadRepository.findByCategoryNameIgnoreCase(category).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "category name", category)
         );
+        if (categoryEntity.isUnavailable())
+            throw new ResourceAlreadyUnavailableException("Category", "category name", category);
+
         Specification<ProductEntity> spec = Specification.where(null);
 
         if (StringUtils.hasText(keyword))
