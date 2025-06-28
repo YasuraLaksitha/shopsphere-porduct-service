@@ -26,7 +26,8 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
         try {
             final String userId = request.getHeader(USER_ID_HEADER);
-            log.info("{} header found in request: {}", USER_ID_HEADER, userId);
+            if (StringUtils.hasText(userId))
+                log.info("{} header found in request: {}", USER_ID_HEADER, userId);
 
             if (StringUtils.hasText(userId))
                 UserContext.set(userId);

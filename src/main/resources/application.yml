@@ -53,8 +53,8 @@ management:
     liveness-state:
       enabled: true
   endpoint:
-    probes:
-      health:
+    health:
+      probes:
         enabled: true
 
 eureka:
