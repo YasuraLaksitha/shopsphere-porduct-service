@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,10 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
+
+    public static final String PRODUCT = "Product";
+
+    public static final String PRODUCT_NAME = "product name";
 
     private final ProductReadRepository productReadRepository;
 
@@ -58,15 +63,15 @@ public class ProductServiceImpl implements IProductService {
                 () -> new ResourceNotFoundException("Category", "category name", category)
         );
 
-        productWriteRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).ifPresent((entity) -> {
-            throw new ResourceAlreadyExistException("Product", "product name", entity.getProductName());
+        productWriteRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).ifPresent(entity -> {
+            throw new ResourceAlreadyExistException(PRODUCT, PRODUCT_NAME, entity.getProductName());
         });
 
         final ProductEntity productEntity = objectMapper.convertValue(productDTO, ProductEntity.class);
         productEntity.setCategoryId(categoryEntity.getCategoryId());
 
         if (productEntity.getProductSpecialPrice() == null)
-            productEntity.setProductSpecialPrice(ApplicationDefaultConstants.PRODUCT_SPECIAL_PRICE);
+            productEntity.setProductSpecialPrice(BigDecimal.valueOf(ApplicationDefaultConstants.PRODUCT_SPECIAL_PRICE));
         if (productEntity.getProductQuantity() == null)
             productEntity.setProductQuantity(ApplicationDefaultConstants.PRODUCT_QUANTITY);
         productEntity.setMinimumThreshHoldCount(ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT);
@@ -81,7 +86,7 @@ public class ProductServiceImpl implements IProductService {
     public void updateProduct(final ProductDTO productDTO) {
         final ProductEntity productEntity =
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productDTO.getProductName()).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productDTO.getProductName())
+                        () -> new ResourceNotFoundException(PRODUCT, PRODUCT_NAME, productDTO.getProductName())
                 );
 
         if (Objects.equals(productEntity.getProductSpecialPrice(), productDTO.getProductSpecialPrice()) &&
@@ -89,7 +94,7 @@ public class ProductServiceImpl implements IProductService {
                 Objects.equals(productEntity.getProductDescription(), productDTO.getProductDescription()) &&
                 Objects.equals(productEntity.getProductQuantity(), productDTO.getProductQuantity()) &&
                 Objects.isNull(productDTO.getProductDiscountPrice()))
-            throw new NoModificationRequiredException("Product", "product name", productDTO.getProductName());
+            throw new NoModificationRequiredException(PRODUCT, PRODUCT_NAME, productDTO.getProductName());
 
         productEntity.setProductPrice(productDTO.getProductPrice());
         productEntity.setProductSpecialPrice(productDTO.getProductSpecialPrice());
@@ -111,7 +116,7 @@ public class ProductServiceImpl implements IProductService {
     public void updateProductImage(final MultipartFile image, final String productName) throws Exception {
         final ProductEntity productEntity =
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                        () -> new ResourceNotFoundException(PRODUCT, PRODUCT_NAME, productName)
                 );
 
         final String uploadImage = fileService.uploadImage(image, productImageUrl);
@@ -134,10 +139,10 @@ public class ProductServiceImpl implements IProductService {
     public boolean disableProductByName(final String productName) {
         final ProductEntity productEntity =
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                        () -> new ResourceNotFoundException(PRODUCT, PRODUCT_NAME, productName)
                 );
         if (productEntity.isUnavailable())
-            throw new ResourceAlreadyUnavailableException("Product", "product name", productName);
+            throw new ResourceAlreadyUnavailableException(PRODUCT, PRODUCT_NAME, productName);
         productEntity.setUnavailable(true);
         productWriteRepository.save(productEntity);
 
@@ -148,21 +153,21 @@ public class ProductServiceImpl implements IProductService {
     public boolean enableProductByName(String productName) {
         final ProductEntity productEntity =
                 productWriteRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                        () -> new ResourceNotFoundException(PRODUCT, PRODUCT_NAME, productName)
                 );
         if (!productEntity.isUnavailable())
-            throw new ResourceAlreadyExistException("Product", "product name", productName);
+            throw new ResourceAlreadyExistException(PRODUCT, PRODUCT_NAME, productName);
         productEntity.setUnavailable(false);
         productWriteRepository.save(productEntity);
 
         return !productEntity.isUnavailable();
     }
 
-    private double calculateProductSpecialPrice(final Double productDiscountPrice, final Double productPrice) {
+    private BigDecimal calculateProductSpecialPrice(final BigDecimal productDiscountPrice, final BigDecimal productPrice) {
         Objects.requireNonNull(productDiscountPrice);
         Objects.requireNonNull(productPrice);
 
-        return productPrice - productDiscountPrice;
+        return productPrice.subtract(productDiscountPrice);
     }
 
     @Override
@@ -170,7 +175,7 @@ public class ProductServiceImpl implements IProductService {
     public ProductDTO retrieveProductByName(final String productName) {
         final ProductEntity productEntity =
                 productReadRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                        () -> new ResourceNotFoundException(PRODUCT, PRODUCT_NAME, productName)
                 );
 
         final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
@@ -219,8 +224,8 @@ public class ProductServiceImpl implements IProductService {
                 .stream().map(productEntity -> {
                     final ProductDTO productDTO = objectMapper.convertValue(productEntity, ProductDTO.class);
                     productDTO.setProductDiscountPrice(calculateProductDiscountPrice(
-                            productEntity.getProductPrice(),
-                            productEntity.getProductSpecialPrice()
+                            productEntity.getProductSpecialPrice(),
+                            productEntity.getProductPrice()
                     ));
                     return productDTO;
                 }).toList();
@@ -239,7 +244,7 @@ public class ProductServiceImpl implements IProductService {
     public boolean isProductQuantityAvailable(final String productName, final Integer quantity) {
         final ProductEntity productEntity =
                 productReadRepository.findByProductNameStartsWithIgnoreCase(productName).orElseThrow(
-                        () -> new ResourceNotFoundException("Product", "product name", productName)
+                        () -> new ResourceNotFoundException(PRODUCT, PRODUCT_NAME, productName)
                 );
         return productEntity.getProductQuantity() - quantity >= ApplicationDefaultConstants.MINIMUM_PRODUCT_THRESHOLD_COUNT;
     }
@@ -269,11 +274,11 @@ public class ProductServiceImpl implements IProductService {
                 }));
     }
 
-    private double calculateProductDiscountPrice(final Double productSpecialPrice, final Double productPrice) {
+    private BigDecimal calculateProductDiscountPrice(final BigDecimal productSpecialPrice, final BigDecimal productPrice) {
         Objects.requireNonNull(productSpecialPrice);
         Objects.requireNonNull(productPrice);
 
-        return productPrice - productSpecialPrice;
+        return productPrice.subtract(productSpecialPrice);
     }
 
     private String createImageUrl(final String string) {

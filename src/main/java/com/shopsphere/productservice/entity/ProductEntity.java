@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -40,11 +41,11 @@ public class ProductEntity extends BaseEntity implements Serializable {
     private Integer productQuantity;
 
     @Column(name = "product_price")
-    private Double productPrice;
+    private BigDecimal productPrice;
 
     @Column(name = "minimum_thresh_hold_count")
     private Integer minimumThreshHoldCount;
 
     @Column(name = "product_special_price")
-    private Double productSpecialPrice;
+    private BigDecimal productSpecialPrice;
 }
